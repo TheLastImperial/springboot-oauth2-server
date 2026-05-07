@@ -1,0 +1,12 @@
+services:
+  db-server:
+    image: postgres:18-alpine
+    container_name: db-server
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_DB=oauth-server
+      - POSTGRES_USER=oauth-server
+      - POSTGRES_PASSWORD=12345678
+    volumes:
+      - ./src/main/resources/db:/docker-entrypoint-initdb.d

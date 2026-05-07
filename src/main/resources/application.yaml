@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: oauth2-server
+
+com:
+  thelastimperial:
+    oauth2_server:
+      keypair:
+        public: PubliStringKey
+        private: PrivateStringKey
