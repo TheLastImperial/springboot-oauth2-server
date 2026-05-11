@@ -13,21 +13,25 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	private final RememberMeServices rememberMeServices;
 
 	private String rpId;
 	private List<String> webauthAllowedHosts;
 	
 	public SecurityConfig(
+		RememberMeServices rememberMeServices,
 		@Value("${com.thelastimperial.oauth2_server.webauthn.rpid}")
 		String rpId,
 		@Value("${com.thelastimperial.oauth2_server.webauthn.allowedorigins}")
 		List<String> webauthAllowedHosts
 	) {
+		this.rememberMeServices = rememberMeServices;
 		this.rpId = rpId;
 		this.webauthAllowedHosts = webauthAllowedHosts;
 	}
@@ -73,6 +77,10 @@ public class SecurityConfig {
 			// Form login handles the redirect to the login page from the
 			// authorization server filter chain
 			.formLogin(Customizer.withDefaults())
+			.rememberMe(rememberMe -> rememberMe
+				.rememberMeServices(rememberMeServices)
+				.rememberMeParameter("remember-me")
+			)
 			.webAuthn(webauthn -> webauthn
 				.rpId(rpId)
 				.allowedOrigins(webauthAllowedHosts.toArray(String[]::new))
