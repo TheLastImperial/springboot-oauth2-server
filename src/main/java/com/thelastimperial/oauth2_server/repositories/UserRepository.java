@@ -9,4 +9,6 @@ import com.thelastimperial.oauth2_server.entities.UserEntity;
 
 public interface UserRepository extends JpaRepository<UserEntity, UUID>{
     public Optional<UserEntity> findByEmailOrUsername(String email, String username);
+    public Optional<UserEntity> findByEmail(String email);
+    public Optional<UserEntity> findByUsername(String username);
 }

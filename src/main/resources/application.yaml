@@ -8,3 +8,6 @@ com:
       keypair:
         public: PubliStringKey
         private: PrivateStringKey
+    webauthn:
+      rpid: localhost
+      allowedorigins: http://localhost,http://localhost2,http://localhost3

@@ -1,5 +1,8 @@
 package com.thelastimperial.oauth2_server.config;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -12,13 +15,22 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
-import lombok.AllArgsConstructor;
-
-@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
+	private String rpId;
+	private List<String> webauthAllowedHosts;
+	
+	public SecurityConfig(
+		@Value("${com.thelastimperial.oauth2_server.webauthn.rpid}")
+		String rpId,
+		@Value("${com.thelastimperial.oauth2_server.webauthn.allowedorigins}")
+		List<String> webauthAllowedHosts
+	) {
+		this.rpId = rpId;
+		this.webauthAllowedHosts = webauthAllowedHosts;
+	}
 
 	@Bean
 	@Order(1)
@@ -34,7 +46,6 @@ public class SecurityConfig {
 			})
 			.authorizeHttpRequests((authorize) ->
 				authorize
-					.requestMatchers("/connect/register").permitAll()
 					.anyRequest().authenticated()
 			)
 			// Redirect to the login page when not authenticated from the
@@ -56,11 +67,16 @@ public class SecurityConfig {
 		http
 			.authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/").permitAll()
+				.requestMatchers("/user").hasRole("USER")
 				.anyRequest().permitAll()
 			)
 			// Form login handles the redirect to the login page from the
 			// authorization server filter chain
-			.formLogin(Customizer.withDefaults());
+			.formLogin(Customizer.withDefaults())
+			.webAuthn(webauthn -> webauthn
+				.rpId(rpId)
+				.allowedOrigins(webauthAllowedHosts.toArray(String[]::new))
+			);
 
 		return http.build();
 	}

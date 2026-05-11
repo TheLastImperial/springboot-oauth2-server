@@ -19,3 +19,10 @@ Create env vars for the public and private key as strings.
 
     - `COM_THELASTIMPERIAL_OAUTH2_SERVER_KEYPAIR_PUBLIC`
     - `COM_THELASTIMPERIAL_OAUTH2_SERVER_KEYPAIR_PRIVATE`
+
+## KeyPass
+
+Create env var to configure the keypass functionality:
+
+    - `COM_THELASTIMPERIAL_OAUTH2_SERVER_WEBAUTHN_RPID`
+    - `COM_THELASTIMPERIAL_OAUTH2_SERVER_WEBAUTHN_ALLOWEDORIGINS`
