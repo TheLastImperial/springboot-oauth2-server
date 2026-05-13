@@ -14,24 +14,31 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+
+import com.thelastimperial.oauth2_server.config.authentication.rest.RestAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 	private final RememberMeServices rememberMeServices;
+	private final RestAuthenticationFilter restAuthenticationFilter;
 
 	private String rpId;
 	private List<String> webauthAllowedHosts;
 	
 	public SecurityConfig(
 		RememberMeServices rememberMeServices,
+		RestAuthenticationFilter restAuthenticationFilter,
 		@Value("${com.thelastimperial.oauth2_server.webauthn.rpid}")
 		String rpId,
 		@Value("${com.thelastimperial.oauth2_server.webauthn.allowedorigins}")
 		List<String> webauthAllowedHosts
 	) {
 		this.rememberMeServices = rememberMeServices;
+		this.restAuthenticationFilter = restAuthenticationFilter;
 		this.rpId = rpId;
 		this.webauthAllowedHosts = webauthAllowedHosts;
 	}
@@ -68,6 +75,13 @@ public class SecurityConfig {
 	@Order(2)
 	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
 			throws Exception {
+	    http
+			.csrf(csrf -> csrf
+				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+				.ignoringRequestMatchers(
+					restAuthenticationFilter.getAndRequestMatcher()
+				)
+			);
 		http
 			.authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/").permitAll()
@@ -76,7 +90,12 @@ public class SecurityConfig {
 			)
 			// Form login handles the redirect to the login page from the
 			// authorization server filter chain
-			.formLogin(Customizer.withDefaults())
+			.formLogin(
+				Customizer.withDefaults()
+			)
+			.addFilterBefore(
+				restAuthenticationFilter, UsernamePasswordAuthenticationFilter.class
+			)
 			.rememberMe(rememberMe -> rememberMe
 				.rememberMeServices(rememberMeServices)
 				.rememberMeParameter("remember-me")
