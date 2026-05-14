@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
@@ -29,12 +30,30 @@ public class RestAuthenticationFilter extends AbstractAuthenticationProcessingFi
     );
 
     public RestAuthenticationFilter(
-        AuthenticationManager authenticationManager
+        AuthenticationManager authenticationManager, JwtEncoder jwtEncoder
     ){
         super(
             new AndRequestMatcher(DEFAULT_PATH_REQUEST_MATCHER, jsonMatcher), authenticationManager
         );
-        super.setAuthenticationSuccessHandler(new RestAuthenticationSuccessHandler());
+        RestAuthenticationSuccessHandler successHandler = new RestAuthenticationSuccessHandler(
+            jwtEncoder
+        );
+
+        super.setAuthenticationSuccessHandler(successHandler);
+    }
+
+    public RestAuthenticationFilter(
+        AuthenticationManager authenticationManager, JwtEncoder jwtEncoder,
+        CustomTokenClaims customTokenClaims
+    ){
+        super(
+            new AndRequestMatcher(DEFAULT_PATH_REQUEST_MATCHER, jsonMatcher), authenticationManager
+        );
+        RestAuthenticationSuccessHandler successHandler = new RestAuthenticationSuccessHandler(
+            jwtEncoder, customTokenClaims
+        );
+
+        super.setAuthenticationSuccessHandler(successHandler);
     }
     @Override
 	public Authentication attemptAuthentication(
